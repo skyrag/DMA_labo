@@ -34,6 +34,11 @@ class GameEngine(
     private val maxTilt = 1.5f
     private var lastTimestamp = 0L
 
+    // accel
+    private var accelX_g = 0f
+    private var accelY_g = 0f
+    private val alpha = 0.98f
+
     val ballRadius: Float
         get() = minOf(geometry.cellW, geometry.cellH) * 0.22f
     val holeRadius: Float
@@ -60,12 +65,27 @@ class GameEngine(
         lastTimestamp = 0L
     }
 
+    fun onAccel(axisX: Float, axisY: Float){
+        accelX_g = axisX
+        accelY_g = axisY
+    }
     fun onGyroscope(axisX: Float, axisY: Float, timestampNs: Long) {
+
         if (lastTimestamp == 0L) { lastTimestamp = timestampNs; return }
         val dt = (timestampNs - lastTimestamp) / 1_000_000_000f
         lastTimestamp = timestampNs
-        tiltX = (tiltX + axisX * dt).coerceIn(-maxTilt, maxTilt)
-        tiltY = (tiltY + axisY * dt).coerceIn(-maxTilt, maxTilt)
+
+        val gyroX = (tiltX + axisX * dt).coerceIn(-maxTilt, maxTilt)
+        val gyroY = (tiltY + axisY * dt).coerceIn(-maxTilt, maxTilt)
+
+        // Accel donne l'inclinaison absolue
+        // ax/ay sont en m/s², on normalise vers [-maxTilt, maxTilt]
+        val accelTiltX = (accelY_g / 9.81f).coerceIn(-maxTilt, maxTilt)
+        val accelTiltY = (-accelX_g / 9.81f).coerceIn(-maxTilt, maxTilt)
+
+        // gyro pour la réactivité, accel pour corriger le drift
+        tiltX = alpha * gyroX + (1f - alpha) * accelTiltX
+        tiltY = alpha * gyroY + (1f - alpha) * accelTiltY
     }
 
     /** Advance one frame. Returns true if a redraw is warranted. */
@@ -80,8 +100,8 @@ class GameEngine(
         val dt = 1f / 60f
         val accelX = sin(tiltY) * gravity
         val accelY = sin(tiltX) * gravity
-        vel.x = vel.x * friction + accelX * dt
-        vel.y = vel.y * friction + accelY * dt
+        vel.x = vel.x * friction  + accelX * dt
+        vel.y = vel.y * friction  + accelY * dt
 
         val steps = 4
         val stepDt = dt / steps

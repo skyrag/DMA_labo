@@ -30,6 +30,10 @@ class GameView @JvmOverloads constructor(
         engine.onGyroscope(axisX, axisY, timestampNs)
     }
 
+    fun onAccelChanged(axisX: Float, axisY: Float) {
+        engine.onAccel(axisX, axisY)
+    }
+
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
         if (!started) return
