@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<meta
+			name="viewport"
+			content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+		/>
+
+		<title>reveal.js</title>
+
+		<link rel="stylesheet" href="dist/reset.css" />
+		<link rel="stylesheet" href="dist/reveal.css" />
+		<link rel="stylesheet" href="dist/theme/black.css" />
+
+		<!-- Theme used for syntax highlighted code -->
+		<link rel="stylesheet" href="dist/plugin/highlight/monokai.css" />
+	</head>
+	<body>
+		<div class="reveal">
+			<div class="slides">
+				<section>
+					<!--
+					## Marble Run
+					DMA - Projet - Gyroscope - Accéléromètre
+					Duprat Nicolas - Viquerat Killian - Berger David
+					-->
+				</section>
+				<section>
+					<!--
+					Contexte :
+					Jeu 2D
+					But: Traverser un labyrinthe d'une zone départ à une zone de fin en évitant les trou dispersé sur celui-ci
+					Contrôle: Utilisation des capteurs pour joueur avec la rotation du téléphone pour permettre les déplacement de la bille
+					-->
+				</section>
+				<section>
+					<!--
+					Technologie:
+						- Rendering Canvas API
+					Capteurs
+						- Accéléromètre (Utilisation pour la force de gravité terrestre)
+						- Gyroscope (Utilisation de l'angle du téléphone pour calculé l'accéleration à appliquer sur la bille)
+					-->
+				</section>
+				<section>
+					<!--
+					## Gyroscope
+
+					donnée gyroscope (rad/s) -> multiplication par le temps du mouvement (rad) -> application du sinus et mutiplication (force de la gravité)
+					on récupère les données de facon normale et ensuite on les traite afin d'obtenir la position de la rotation	du téléphone entre le moment avant le mouvement et le moment après le mouvement, on a donc des donnée en rad/s , on va donc le multiplié par le temps du mouvement afin d'obtenir l'unité en rad soit la différence d'angle entre la position initiale et la position après mouvement a partir de la on veut avoir le sinus de cette angle et de l'appliqué a la constante de la gravité afin d'obtenir la puissance de la force appliquer par la gravité, soit son accélération. Ajout d'une image avec du code
+
+					## Problème
+					le sensor du gyroscope se retrouve avec un drift inérent au sensor qui nous empêche une bonne utilisation du jeu dans des cas extrêmes. image de drift manette
+					-->
+				</section>
+				<section>
+					<!--
+					## Accéléromètre
+ 					Pour régler ce problèmes on va utiliser un autre sensor comme le préconise la doc : https://developer.android.com/develop/sensors-and-location/sensors/sensors_motion?hl=fr. On a donc utiliser l'accéléromètre afin de déterminer la puissance de la gravité a la position actuelle, avec celle ci on va mix cette donnée a celle du gyroscope afin que l'on puisse mitiger le drift amener par le gyroscope. Ajout d'une image avec du code.
+					-->
+				</section>
+				<section>
+					<!--
+					Architecture — séparation logique / UI
+					Modèle (sans dépendance Android)
+
+					Maze / Cell — génération du labyrinthe (backtracking récursif)
+					Holes / GridPos — placement aléatoire des trous
+					Ball (Vec2) — position et vitesse
+
+					Logique de jeu
+
+					GameEngine — état du jeu (PLAYING / WON / FELL), physique, détection collisions et victoire. Testable sans Android.
+					MazeGeometry — seul endroit qui connaît les dimensions en pixels (cellule → pixel)
+
+					UI (Android)
+
+					MainActivity — point d'entrée, gère les capteurs (SensorManager), transmet gyroscope/accéléromètre à la vue
+					GameView — cycle de vie, entrées, boucle d'animation
+					GameRenderer — tout le dessin (Canvas, Paint)
+
+					Flux de dépendances (unidirectionnel)
+					MainActivity ──capteurs──▶ GameView ──input──▶ GameEngine ──owns──▶ Maze, Holes, Ball
+										   GameRenderer ──lit l'état──▶ GameEngine
+					MainActivity capte les événements matériels et les relaie ; GameView les transmet à l'GameEngine. L'UI dépend de la logique, jamais l'inverse. Changements d'état signalés via callback onStateChanged (observateur).
+					Note au passage : dans ton onSensorChanged, onGyroscopeChanged est appelé deux fois (une fois en haut, une fois dans le when). Tu peux retirer les deux lignes au-dessus du when — elles font doublon et envoient les valeurs même quand le capteur est l'accéléromètre.
+					-->
+				</section>
+				<section>
+					<!--
+						Démonstration
+					-->
+				</section>
+				<section>
+					<!--
+					Conclusion:
+
+					- faire attention au données transférer par les capteurs.
+					- les utiliser de façon efficace pour l'utilisation voulue.
+					- Application de transformation et de calcul pour transformée celle-ci en donnée utiles
+					-->
+				</section>
+				<section>
+					<!--
+						Questions?
+					-->
+				</section>
+			</div>
+		</div>
+
+		<script src="dist/reveal.js"></script>
+		<script src="dist/plugin/notes.js"></script>
+		<script src="dist/plugin/markdown.js"></script>
+		<script src="dist/plugin/highlight.js"></script>
+		<script>
+			// More info about initialization & config:
+			// - https://revealjs.com/initialization/
+			// - https://revealjs.com/config/
+			Reveal.initialize({
+				hash: true,
+
+				// Learn about plugins: https://revealjs.com/plugins/
+				plugins: [RevealMarkdown, RevealHighlight, RevealNotes],
+			});
+		</script>
+	</body>
+</html>
