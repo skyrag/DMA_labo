@@ -1,13 +1,10 @@
-package ch.heigvd.iict.dma.exercice_sensors
+package ch.heigvd.iict.dma.exercice_sensors.game
 
-class Maze (private val cols: Int,private val rows: Int){
-    fun getRows(): Int = rows
-    fun getCols(): Int = cols
-    fun getCells(): Array<Array<Cell>> = cells
+class Maze(val cols: Int, val rows: Int) {
 
-    private lateinit var cells: Array<Array<Cell>>
+    lateinit var cells: Array<Array<Cell>>
+        private set
 
-    // --- Maze generation: recursive backtracking ---
     fun generateMaze() {
         cells = Array(rows) { r -> Array(cols) { c -> Cell(c, r) } }
         val stack = ArrayDeque<Cell>()
@@ -18,9 +15,8 @@ class Maze (private val cols: Int,private val rows: Int){
         while (stack.isNotEmpty()) {
             val current = stack.last()
             val neighbors = unvisitedNeighbors(current)
-            if (neighbors.isEmpty()) {
-                stack.removeLast()
-            } else {
+            if (neighbors.isEmpty()) stack.removeLast()
+            else {
                 val next = neighbors.random()
                 removeWall(current, next)
                 next.visited = true
@@ -29,9 +25,11 @@ class Maze (private val cols: Int,private val rows: Int){
         }
     }
 
+    fun cellAt(col: Int, row: Int): Cell = cells[row][col]
+
     private fun unvisitedNeighbors(cell: Cell): List<Cell> {
         val result = mutableListOf<Cell>()
-        val (c, r) = cell.col to cell.row
+        val c = cell.col; val r = cell.row
         if (r > 0 && !cells[r-1][c].visited) result.add(cells[r-1][c])
         if (r < rows-1 && !cells[r+1][c].visited) result.add(cells[r+1][c])
         if (c > 0 && !cells[r][c-1].visited) result.add(cells[r][c-1])
